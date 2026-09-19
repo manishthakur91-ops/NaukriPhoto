@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NaukriPhoto - Sarkari Job Photo & Signature Resizer (Exact KB & Pixel)</title>
+  <meta name="description" content="Resize photo and signature for SSC, UPSC, Railway, IBPS, UP Police and State Government exams. 100% private, browser-based, instant KB and pixel compressor.">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.95);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --success: #16a34a;
+      --error: #dc2626;
+      --warning: #d97706;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background: radial-gradient(circle at top, #1e293b, var(--bg));
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+    .container { width: 100%; max-width: 540px; }
+    header { text-align: center; margin: 1rem 0; }
+    .logo { font-size: 1.8rem; font-weight: 800; color: #fff; }
+    .logo span { color: #38bdf8; }
+    .subtitle { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      background: rgba(37, 99, 235, 0.2);
+      color: #60a5fa;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      font-weight: 600;
+      margin-top: 0.4rem;
+    }
+    .ad-placeholder {
+      width: 100%;
+      min-height: 60px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+      margin: 1rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .tab-btn {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; margin-bottom: 0.35rem; letter-spacing: 0.05em; }
+    select, input[type="text"], input[type="number"], input[type="range"] {
+      width: 100%;
+      padding: 0.65rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 0.5rem;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+    }
+    select:focus, input:focus { border-color: var(--primary); }
+    .adjustments {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .custom-dims { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem; }
+    .upload-zone {
+      display: block;
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 1.25rem;
+      background: rgba(255, 255, 255, 0.02);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .upload-zone:hover { border-color: var(--primary); }
+    .preview-container {
+      text-align: center;
+      margin-bottom: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    canvas { max-width: 100%; height: auto; border-radius: 0.25rem; border: 1px solid rgba(255, 255, 255, 0.1); background: #fff; }
+    
+    .status-box {
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      text-align: center;
+      line-height: 1.4;
+      white-space: pre-line;
+    }
+    .box-green {
+      background: rgba(22, 163, 74, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      display: block;
+    }
+    .box-red {
+      background: rgba(220, 38, 38, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      display: block;
+    }
+    .box-yellow {
+      background: rgba(217, 119, 6, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      display: block;
+    }
+
+    .download-btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
+    .download-btn:hover { background: var(--primary-hover); }
+    .seo-section { margin-top: 2rem; color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+    .seo-section h2 { color: #fff; font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
+    .seo-table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.8rem; }
+    .seo-table th, .seo-table td { border: 1px solid var(--card-border); padding: 0.5rem; text-align: left; }
+    .seo-table th { background: rgba(255, 255, 255, 0.05); color: #fff; }
+    .faq-item { margin-bottom: 0.75rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; }
+    .faq-item b { color: #fff; display: block; margin-bottom: 0.25rem; font-size: 0.9rem; }
+    footer { margin: 2rem 0 1rem; text-align: center; font-size: 0.75rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">Naukri<span>Photo</span>.in</div>
+    <div class="subtitle">Online Government Exam Photo & Signature Resizer</div>
+    <span class="badge">🔒 100% Client-Side Privacy • Zero Server Upload</span>
+  </header>
+
+  <div class="ad-placeholder">Advertisement Space (Responsive Banner)</div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabPhoto">Passport Photo</button>
+      <button class="tab-btn" id="tabSign">Signature Resizer</button>
+    </div>
+
+    <div class="form-group">
+      <label for="presetSelect">Target Government Exam Preset</label>
+      <select id="presetSelect">
+        <option value="ssc">SSC (CGL, CHSL, GD, MTS) - 200x230 px | 20-50 KB</option>
+        <option value="upsc">UPSC / Civil Services OTR - 350x350 px | 20-300 KB</option>
+        <option value="railway">RRB Railway (NTPC, Group D, ALP) - 240x320 px | 30-70 KB</option>
+        <option value="ibps">Banking (IBPS, SBI, RBI PO/Clerk) - 200x230 px | 20-50 KB</option>
+        <option value="uppolice">UP Police / State Exams - 200x230 px | 20-50 KB</option>
+        <option value="custom">Custom Configuration (Pixel & KB Manual)</option>
+      </select>
+    </div>
+
+    <div class="custom-dims" id="customDimsBox" style="display: none;">
+      <div class="form-group">
+        <label>Width (px)</label>
+        <input type="number" id="customW" value="200" min="50" max="2400">
+      </div>
+      <div class="form-group">
+        <label>Height (px)</label>
+        <input type="number" id="customH" value="230" min="50" max="2400">
+      </div>
+      <div class="form-group">
+        <label>Min Size (KB)</label>
+        <input type="number" id="customMinKB" value="20" min="2" max="1000">
+      </div>
+      <div class="form-group">
+        <label>Max Size (KB)</label>
+        <input type="number" id="customMaxKB" value="50" min="5" max="2000">
+      </div>
+    </div>
+
+    <div id="photoFields">
+      <div class="form-group">
+        <label>Candidate Name (Optional Stamp)</label>
+        <input type="text" id="candidateName" placeholder="e.g. MANISH KUMAR">
+      </div>
+      <div class="form-group">
+        <label>Date of Photo - DOP (DD-MM-YYYY)</label>
+        <input type="text" id="dop" placeholder="e.g. 19-09-2026">
+      </div>
+    </div>
+
+    <label class="upload-zone" for="fileInput" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+      <div id="uploadText">📁 Tap to Select Photo from Device</div>
+    </label>
+
+    <div class="adjustments" id="adjustControls" style="display: none;">
+      <div>
+        <label>Zoom / Scale: <span id="scaleVal">1.0x</span></label>
+        <input type="range" id="scaleSlider" min="0.8" max="2.0" step="0.05" value="1.0">
+      </div>
+      <div>
+        <label>Vertical Position: <span id="offsetVal">0</span></label>
+        <input type="range" id="offsetSlider" min="-100" max="100" step="2" value="0">
+      </div>
+    </div>
+
+    <div class="preview-container">
+      <canvas id="canvas" style="display:none;"></canvas>
+      <div id="placeholderText" style="color: var(--muted); font-size: 0.85rem;">Live Preview Box</div>
+    </div>
+
+    <div id="alertBox" class="status-box" style="display:none;"></div>
+    <div id="sizeStatusBox" class="status-box" style="display:none;"></div>
+
+    <button class="download-btn" id="downloadBtn">Download Compliant Image</button>
+  </div>
+
+  <div class="ad-placeholder">Advertisement Space (In-Feed Slot)</div>
+
+  <section class="seo-section">
+    <h2>Official Government Exam Photo Guidelines</h2>
+    <p>Har saal hazaron sarkari exam applications sirf galat photo dimension aur size ke kaaran reject ho jaate hain. NaukriPhoto tool automatic compliance algorithms use karta hai taaki aapka form pehli baar mein accept ho.</p>
+
+    <div style="background: rgba(217, 119, 6, 0.12); border-left: 4px solid var(--warning); padding: 0.75rem 1rem; border-radius: 0.35rem; margin: 1rem 0; color: #fde68a; font-size: 0.82rem; line-height: 1.5;">
+      <b>📌 Zaroori Suchna (Important Notice):</b><br>
+      Neeche diye gaye sabhi sizes aur dimensions <strong>indicative</strong> hain aur official government notifications ke hisaab se samay-samay par badle ja sakte hain. Form bharne se pehle sambandhit exam ka official recruitment notification zaroor verify karein. Agar notification mein naye specifications hon, toh upar diye gaye <strong>"Custom Configuration (Pixel & KB Manual)"</strong> option ka use karke apne manmutabik exact pixel aur size set karein.
+    </div>
+
+    <table class="seo-table">
+      <thead>
+        <tr><th>Recruitment Board</th><th>Photo Dimensions</th><th>Photo KB</th><th>Signature KB</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>SSC (Staff Selection Commission)</td><td>200 x 230 px</td><td>20 - 50 KB</td><td>10 - 20 KB</td></tr>
+        <tr><td>UPSC (OTR Portal)</td><td>350 x 350 px</td><td>20 - 300 KB</td><td>20 - 300 KB</td></tr>
+        <tr><td>RRB (Railway Recruitment)</td><td>240 x 320 px</td><td>30 - 70 KB</td><td>30 - 70 KB</td></tr>
+        <tr><td>IBPS / State Banks</td><td>200 x 230 px</td><td>20 - 50 KB</td><td>10 - 20 KB</td></tr>
+        <tr><td>UP Police / State Exams</td><td>200 x 230 px</td><td>20 - 50 KB</td><td>5 - 20 KB</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Frequently Asked Questions (FAQs)</h2>
+    <div class="faq-item">
+      <b>Kya yahan diye gaye presets hamesha exact hote hain?</b>
+      Presets pichle official rules ke aadhar par banaye gaye hain, par notifications update ho sakte hain. Isliye official advertisement se match karna behtar hai. Kuch alag manga ho toh <i>Custom Configuration</i> me exact pixels set kar sakte hain.
+    </div>
+    <div class="faq-item">
+      <b>Kya photo upload karna safe hai?</b>
+      Haan, NaukriPhoto 100% client-side chalne wala tool hai. Aapki photo ya signature kisi bhi server par upload nahi hoti; saari processing aapke phone ya computer ke memory ke andar hi hoti hai.
+    </div>
+    <div class="faq-item">
+      <b>SSC form mein Date of Photo (DOP) kaise dalein?</b>
+      Tool mein "Date of Photo" box mein required date type karein. Tool automatically photo ke bottom strip par candidate name aur DOP stamp kar dega.
+    </div>
+    <div class="faq-item">
+      <b>Blue pen signature upload kar sakte hain?</b>
+      Bilkul! Hamara signature filter blue aur black ink signatures ko auto-detect karke background clear kar deta hai bina strokes ko blur kiye.
+    </div>
+  </section>
+
+  <footer>
+    © 2026 NaukriPhoto.in • Fast, Free & Private Sarkari Resizer.
+  </footer>
+</div>
+<script>
+  let mode = 'photo';
+  let rawBitmap = null;
+  let activeTicket = 0;
+  let debounceTimer = null;
+  let latestBlob = null;
+  let lastObjectUrl = null;
+  let selectedFileName = null;
+
+  const presets = {
+    ssc: { pW: 200, pH: 230, pMin: 20, pMax: 50, sW: 350, sH: 150, sMin: 10, sMax: 20 },
+    upsc: { pW: 350, pH: 350, pMin: 20, pMax: 300, sW: 350, sH: 350, sMin: 20, sMax: 300 },
+    railway: { pW: 240, pH: 320, pMin: 30, pMax: 70, sW: 280, sH: 120, sMin: 30, sMax: 70 },
+    ibps: { pW: 200, pH: 230, pMin: 20, pMax: 50, sW: 140, sH: 60, sMin: 10, sMax: 20 },
+    uppolice: { pW: 200, pH: 230, pMin: 20, pMax: 50, sW: 150, sH: 60, sMin: 5, sMax: 20 }
+  };
+
+  const el = (id) => document.getElementById(id);
+
+  function updateUploadText() {
+    if (selectedFileName) {
+      el('uploadText').innerText = `Selected: ${selectedFileName}`;
+    } else {
+      el('uploadText').innerText = mode === 'photo' ? '📁 Tap to Select Photo from Device' : '📁 Tap to Select Signature from Device';
+    }
+  }
+
+  function resetUploadState() {
+    if (rawBitmap && typeof rawBitmap.close === 'function') rawBitmap.close();
+    rawBitmap = null;
+    selectedFileName = null;
+    latestBlob = null;
+    el('fileInput').value = '';
+    el('canvas').style.display = 'none';
+    el('placeholderText').style.display = 'block';
+    el('adjustControls').style.display = 'none';
+    el('downloadBtn').style.display = 'none';
+    el('alertBox').style.display = 'none';
+    el('sizeStatusBox').style.display = 'none';
+    updateUploadText();
+  }
+
+  el('tabPhoto').addEventListener('click', () => {
+    if (mode === 'photo') return;
+    mode = 'photo';
+    el('tabPhoto').classList.add('active');
+    el('tabSign').classList.remove('active');
+    el('photoFields').style.display = 'block';
+    resetUploadState();
+  });
+
+  el('tabSign').addEventListener('click', () => {
+    if (mode === 'sign') return;
+    mode = 'sign';
+    el('tabSign').classList.add('active');
+    el('tabPhoto').classList.remove('active');
+    el('photoFields').style.display = 'none';
+    resetUploadState();
+  });
+
+  el('presetSelect').addEventListener('change', () => {
+    el('customDimsBox').style.display = el('presetSelect').value === 'custom' ? 'grid' : 'none';
+    scheduleProcess();
+  });
+
+  ['candidateName', 'dop', 'customW', 'customH', 'customMinKB', 'customMaxKB'].forEach(id => {
+    el(id).addEventListener('input', scheduleProcess);
+  });
+
+  el('scaleSlider').addEventListener('input', (e) => {
+    el('scaleVal').innerText = parseFloat(e.target.value).toFixed(2) + 'x';
+    scheduleProcess();
+  });
+
+  el('offsetSlider').addEventListener('input', (e) => {
+    el('offsetVal').innerText = e.target.value;
+    scheduleProcess();
+  });
+
+  el('fileInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 25 * 1024 * 1024) {
+      showAlert('File size too large (Max 25MB allowed).', 'red');
+      return;
+    }
+
+    try {
+      if ('createImageBitmap' in window) {
+        if (rawBitmap && typeof rawBitmap.close === 'function') rawBitmap.close();
+        rawBitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      } else {
+        rawBitmap = await loadFallbackImage(file);
+      }
+      selectedFileName = file.name;
+      updateUploadText();
+      el('adjustControls').style.display = 'grid';
+      scheduleProcess();
+    } catch (err) {
+      showAlert('Unable to parse image. Please upload a valid JPEG/PNG.', 'red');
+    }
+    e.target.value = '';
+  });
+
+  function loadFallbackImage(file) {
+    return new Promise((resolve, reject) => {
+      if (lastObjectUrl) { URL.revokeObjectURL(lastObjectUrl); lastObjectUrl = null; }
+      const img = new Image();
+      const objUrl = URL.createObjectURL(file);
+      lastObjectUrl = objUrl;
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = objUrl;
+    });
+  }
+
+  function scheduleProcess() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(processImage, 120);
+  }
+
+  function showAlert(msg, color) {
+    const box = el('alertBox');
+    box.innerText = msg;
+    box.className = 'status-box ' + (color === 'red' ? 'box-red' : color === 'yellow' ? 'box-yellow' : 'box-green');
+    box.style.display = 'block';
+  }
+
+  function showSizeStatus(msg, isPass) {
+    const box = el('sizeStatusBox');
+    box.innerText = msg;
+    box.className = 'status-box ' + (isPass ? 'box-green' : 'box-yellow');
+    box.style.display = 'block';
+  }
+
+  function isValidCalendarDate(str) {
+    const m = str.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (!m) return false;
+    const d = parseInt(m[1], 10), mo = parseInt(m[2], 10) - 1, y = parseInt(m[3], 10);
+    if (y < 1900 || y > 2100) return false;
+    const dt = new Date(Date.UTC(y, mo, d));
+    return dt.getUTCFullYear() === y && dt.getUTCMonth() === mo && dt.getUTCDate() === d;
+  }
+
+  // ACCURATE PASSPORT AUDIT (STUDIO PORTRAIT SAFE)
+  function inspectPhotoDefects(ctx, w, h) {
+    const d = ctx.getImageData(0, 0, w, h).data;
+    let criticalErrors = [];
+
+    // 1. Face Area & Close-up Check
+    let centerTotal = 0, centerSkin = 0;
+    for (let y = Math.floor(h * 0.20); y < Math.floor(h * 0.70); y++) {
+      for (let x = Math.floor(w * 0.22); x < Math.floor(w * 0.78); x++) {
+        const i = (y * w + x) * 4;
+        const r = d[i], g = d[i+1], b = d[i+2];
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        centerTotal++;
+        if (r > g + 8 && r > b + 8 && lum > 65 && lum < 235) {
+          centerSkin++;
+        }
+      }
+    }
+    const centerSkinRatio = centerSkin / centerTotal;
+    if (centerSkinRatio < 0.16) {
+      criticalErrors.push("⛔ REJECTION: Chehra bohot door hai (Full body/Standing photo detected). Zoom slider ka use karke sirf head aur shoulders ko frame me layein.");
+    }
+
+    // 2. Corner-Only Background Sampling (Avoids hair false reject)
+    let leftCorner = [], rightCorner = [];
+    const cornerW = Math.floor(w * 0.20);
+    const cornerH = Math.floor(h * 0.20);
+
+    for (let y = 0; y < cornerH; y += 2) {
+      for (let x = 0; x < cornerW; x += 2) {
+        const i = (y * w + x) * 4;
+        leftCorner.push(0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2]);
+      }
+      for (let x = w - cornerW; x < w; x += 2) {
+        const i = (y * w + x) * 4;
+        rightCorner.push(0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2]);
+      }
+    }
+
+    function calcVariance(arr) {
+      const m = arr.reduce((a, b) => a + b, 0) / arr.length;
+      return arr.reduce((a, b) => a + Math.pow(b - m, 2), 0) / arr.length;
+    }
+
+    const varL = calcVariance(leftCorner);
+    const varR = calcVariance(rightCorner);
+
+    if (varL > 550 || varR > 550) {
+      criticalErrors.push("⛔ REJECTION: Background plain nahi hai (Room/Wallpaper/Furniture detected). Form reject ho jayega, plain light background use karein.");
+    }
+
+    // 3. Dual-Eye Sunglasses vs Natural Eye Check
+    const yStart = Math.floor(h * 0.32);
+    const yEnd = Math.floor(h * 0.48);
+    const leftEye = [Math.floor(w * 0.22), Math.floor(w * 0.44)];
+    const rightEye = [Math.floor(w * 0.56), Math.floor(w * 0.78)];
+
+    function checkSolidGlassesInZone(xRange) {
+      let tot = 0, solidDarkLenses = 0;
+      for (let y = yStart; y < yEnd; y++) {
+        for (let x = xRange[0]; x < xRange[1]; x++) {
+          const i = (y * w + x) * 4;
+          const lum = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+          tot++;
+          if (lum < 55) solidDarkLenses++;
+        }
+      }
+      return solidDarkLenses / tot;
+    }
+
+    if (checkSolidGlassesInZone(leftEye) > 0.65 && checkSolidGlassesInZone(rightEye) > 0.65) {
+      criticalErrors.push("⛔ REJECTION: Dark Glasses / Sunglasses detected! Dono aankhein saaf dikhna zaroori hai.");
+    }
+
+    return criticalErrors;
+  }
+
+  // SIGNATURE RAW BITMAP AUDIT (REJECT OBJECTS/SCREENSHOTS)
+  function validateSignatureImage(rawBmp) {
+    if (rawBmp.height > rawBmp.width * 1.05) {
+      return false;
+    }
+
+    const sW = 80, sH = 80;
+    const off = document.createElement('canvas');
+    off.width = sW; off.height = sH;
+    const octx = off.getContext('2d');
+    octx.drawImage(rawBmp, 0, 0, sW, sH);
+    const d = octx.getImageData(0, 0, sW, sH).data;
+
+    let whitePaperPixels = 0;
+    let inkPixels = 0;
+    let textureOrPhotoPixels = 0;
+
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i+1], b = d[i+2];
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+      const isPaper = (lum > 185) && (Math.abs(r - g) < 22) && (Math.abs(r - b) < 22);
+      const isBlueInk = (b > r + 15 && b > g + 10 && lum < 150);
+      const isDarkInk = (lum < 75);
+
+      if (isPaper) {
+        whitePaperPixels++;
+      } else if (isBlueInk || isDarkInk) {
+        inkPixels++;
+      } else {
+        textureOrPhotoPixels++;
+      }
+    }
+
+    const total = sW * sH;
+    const paperRatio = whitePaperPixels / total;
+    const textureRatio = textureOrPhotoPixels / total;
+    const inkRatio = inkPixels / total;
+
+    if (paperRatio < 0.65 || textureRatio > 0.20 || inkRatio > 0.18 || inkRatio < 0.003) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function padJpegBlob(blob, targetBytes) {
+    return new Promise((resolve) => {
+      if (blob.size >= targetBytes) return resolve(blob);
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const u8 = new Uint8Array(e.target.result);
+        if (u8[0] !== 0xFF || u8[1] !== 0xD8) return resolve(blob);
+
+        let eoi = -1;
+        for (let i = u8.length - 2; i >= 0; i--) {
+          if (u8[i] === 0xFF && u8[i + 1] === 0xD9) {
+            eoi = i;
+            break;
+          }
+        }
+        if (eoi === -1) return resolve(blob);
+
+        const needed = targetBytes - u8.length;
+        const segmentLen = Math.max(4, needed + 4);
+        const lengthFieldValue = segmentLen - 2;
+        const payloadLen = segmentLen - 4;
+        if (lengthFieldValue > 65533) return resolve(blob);
+
+        const header = new Uint8Array([0xFF, 0xFE, (lengthFieldValue >> 8) & 0xFF, lengthFieldValue & 0xFF]);
+        const payload = new Uint8Array(Math.max(0, payloadLen));
+        payload.fill(0x20);
+
+        const finalBlob = new Blob([
+          u8.subarray(0, eoi),
+          header,
+          payload,
+          u8.subarray(eoi)
+        ], { type: 'image/jpeg' });
+
+        resolve(finalBlob);
+      };
+      reader.readAsArrayBuffer(blob);
+    });
+  }
+
+  async function binarySearchQuality(sourceCanvas, maxBytes, ticket) {
+    let lowQ = 0.05, highQ = 0.98;
+    let best = null;
+    for (let i = 0; i < 6; i++) {
+      const q = (lowQ + highQ) / 2;
+      const b = await new Promise(r => sourceCanvas.toBlob(r, 'image/jpeg', q));
+      if (ticket !== activeTicket) return null;
+      if (b.size <= maxBytes) {
+        best = b;
+        lowQ = q;
+      } else {
+        highQ = q;
+      }
+    }
+    if (!best) {
+      best = await new Promise(r => sourceCanvas.toBlob(r, 'image/jpeg', 0.05));
+      if (ticket !== activeTicket) return null;
+    }
+    return best;
+  }
+
+  async function processImage() {
+    if (!rawBitmap) return;
+    const ticket = ++activeTicket;
+
+    el('alertBox').style.display = 'none';
+    el('sizeStatusBox').style.display = 'none';
+
+    // SIGNATURE REJECTION GUARD
+    if (mode === 'sign') {
+      const isValid = validateSignatureImage(rawBitmap);
+      if (!isValid) {
+        showAlert('⛔ Rejection Alert: Photo, Object, or Screenshot detected! Upload a real pen signature on white paper.', 'red');
+        el('canvas').style.display = 'none';
+        el('placeholderText').style.display = 'block';
+        el('downloadBtn').style.display = 'none';
+        latestBlob = null;
+        return;
+      }
+    }
+
+    const canvas = el('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const pKey = el('presetSelect').value;
+
+    let w, h, minKB, maxKB;
+    if (pKey === 'custom') {
+      w = Math.min(2400, Math.max(50, parseInt(el('customW').value, 10) || 200));
+      h = Math.min(2400, Math.max(50, parseInt(el('customH').value, 10) || 230));
+      minKB = Math.max(2, parseInt(el('customMinKB').value, 10) || 20);
+      maxKB = Math.max(minKB, parseInt(el('customMaxKB').value, 10) || 50);
+    } else {
+      const conf = presets[pKey];
+      w = mode === 'photo' ? conf.pW : conf.sW;
+      h = mode === 'photo' ? conf.pH : conf.sH;
+      minKB = mode === 'photo' ? conf.pMin : conf.sMin;
+      maxKB = mode === 'photo' ? conf.pMax : conf.sMax;
+    }
+
+    canvas.width = w;
+    canvas.height = h;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+
+    const userScale = Math.max(0.5, Math.min(3.0, parseFloat(el('scaleSlider').value) || 1.0));
+    const userOffset = parseInt(el('offsetSlider').value, 10) || 0;
+
+    if (mode === 'sign') {
+      const baseScale = Math.min(w / rawBitmap.width, h / rawBitmap.height) * userScale;
+      const dw = rawBitmap.width * baseScale;
+      const dh = rawBitmap.height * baseScale;
+      const dx = (w - dw) / 2;
+      const dy = ((h - dh) / 2) + userOffset;
+      ctx.drawImage(rawBitmap, 0, 0, rawBitmap.width, rawBitmap.height, dx, dy, dw, dh);
+    } else {
+      const imgRatio = rawBitmap.width / rawBitmap.height;
+      const targetRatio = w / h;
+      let baseSW, baseSH;
+
+      if (imgRatio > targetRatio) {
+        baseSH = rawBitmap.height;
+        baseSW = baseSH * targetRatio;
+      } else {
+        baseSW = rawBitmap.width;
+        baseSH = baseSW / targetRatio;
+      }
+
+      const sW = Math.min(rawBitmap.width, baseSW / userScale);
+      const sH = Math.min(rawBitmap.height, baseSH / userScale);
+      const maxOffset = (rawBitmap.height - sH) / 2;
+      const scaledOffset = (userOffset / 100) * maxOffset;
+
+      const sX = Math.max(0, Math.min(rawBitmap.width - sW, (rawBitmap.width - sW) / 2));
+      const sY = Math.max(0, Math.min(rawBitmap.height - sH, ((rawBitmap.height - sH) / 2) - scaledOffset));
+
+      const finalSW = Math.max(1, Math.min(rawBitmap.width - sX, sW));
+      const finalSH = Math.max(1, Math.min(rawBitmap.height - sY, sH));
+
+      ctx.drawImage(rawBitmap, sX, sY, finalSW, finalSH, 0, 0, w, h);
+    }
+
+    if (mode === 'sign') {
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const px = imgData.data;
+      for (let i = 0; i < px.length; i += 4) {
+        const r = px[i], g = px[i+1], b = px[i+2];
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        const isBlueInk = (b > r + 15 && b > g + 10);
+
+        if (isBlueInk) {
+          px[i] = Math.max(0, r * 0.6);
+          px[i+1] = Math.max(0, g * 0.6);
+          px[i+2] = Math.min(255, b * 1.1);
+        } else if (lum > 165) {
+          px[i] = 255; px[i+1] = 255; px[i+2] = 255;
+        } else {
+          px[i] = Math.max(0, r * 0.65);
+          px[i+1] = Math.max(0, g * 0.65);
+          px[i+2] = Math.max(0, b * 0.65);
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    // PHOTO DEFECTS HARD LOCK AUDIT
+    if (mode === 'photo') {
+      const defects = inspectPhotoDefects(ctx, w, h);
+      if (defects.length > 0) {
+        showAlert(defects.join('\n\n'), 'red');
+        canvas.style.display = 'block';
+        el('placeholderText').style.display = 'none';
+        el('downloadBtn').style.display = 'none';
+        latestBlob = null;
+        return;
+      }
+
+      const name = el('candidateName').value.trim();
+      const dopStr = el('dop').value.trim();
+
+      if (dopStr && !isValidCalendarDate(dopStr)) {
+        showAlert('Invalid Date: Enter valid calendar date in DD-MM-YYYY format (e.g. 19-09-2026)', 'red');
+        el('downloadBtn').style.display = 'none';
+        return;
+      }
+
+      if (name || dopStr) {
+        const barH = Math.round(h * 0.22);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, h - barH, w, barH);
+        ctx.fillStyle = '#000000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        let baseFontSize = Math.max(10, Math.round(barH * 0.32));
+        ctx.font = `bold ${baseFontSize}px sans-serif`;
+
+        if (name) {
+          const textWidth = ctx.measureText(name.toUpperCase()).width;
+          const maxAllowedWidth = w - 16;
+          if (textWidth > maxAllowedWidth) {
+            baseFontSize = Math.max(8, Math.floor(baseFontSize * (maxAllowedWidth / textWidth)));
+            ctx.font = `bold ${baseFontSize}px sans-serif`;
+          }
+        }
+
+        if (name && dopStr) {
+          ctx.fillText(name.toUpperCase(), w / 2, h - (barH * 0.68));
+          ctx.font = `${Math.max(8, Math.round(barH * 0.26))}px sans-serif`;
+          ctx.fillText(`DOP: ${dopStr}`, w / 2, h - (barH * 0.28));
+        } else {
+          ctx.fillText((name || `DOP: ${dopStr}`).toUpperCase(), w / 2, h - (barH * 0.5));
+        }
+      }
+    }
+
+    const minBytes = minKB * 1024;
+    const maxBytes = maxKB * 1024;
+
+    let selectedBlob = await binarySearchQuality(canvas, maxBytes, ticket);
+    if (ticket !== activeTicket) return;
+
+    let blurPasses = 0;
+    while (selectedBlob && selectedBlob.size > maxBytes && blurPasses < 2) {
+      blurPasses++;
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = w;
+      tempCanvas.height = h;
+      const tCtx = tempCanvas.getContext('2d');
+      tCtx.filter = `blur(${blurPasses * 0.6}px)`;
+      tCtx.drawImage(canvas, 0, 0);
+      selectedBlob = await binarySearchQuality(tempCanvas, maxBytes, ticket);
+      if (ticket !== activeTicket) return;
+    }
+
+    if (selectedBlob && selectedBlob.size < minBytes) {
+      selectedBlob = await padJpegBlob(selectedBlob, minBytes);
+    }
+
+    if (ticket !== activeTicket) return;
+
+    latestBlob = selectedBlob;
+    const finalSizeKB = (selectedBlob.size / 1024).toFixed(1);
+
+    canvas.style.display = 'block';
+    el('placeholderText').style.display = 'none';
+
+    if (selectedBlob.size >= minBytes && selectedBlob.size <= maxBytes) {
+      showSizeStatus(`✓ Compliant: ${w}x${h} px | ${finalSizeKB} KB (Target Range: ${minKB}-${maxKB} KB)`, true);
+      el('downloadBtn').style.display = 'block';
+    } else {
+      showSizeStatus(`⚠️ Non-Compliant Size: ${finalSizeKB} KB (Required: ${minKB}-${maxKB} KB)`, false);
+      el('downloadBtn').style.display = 'block';
+    }
+  }
+
+  el('downloadBtn').addEventListener('click', () => {
+    if (!latestBlob) return;
+    const url = URL.createObjectURL(latestBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `naukriphoto_${mode}_${Date.now()}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+</script>
+</body>
+</html>
